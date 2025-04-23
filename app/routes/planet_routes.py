@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, abort, make_response
 from app.models.planets import planets
 # In Flask, url_prefix is an argument used when registering a blueprint. It adds a specified prefix to all routes defined within that blueprint.
 # neat!
@@ -24,20 +24,28 @@ def get_all_planets():
     return planet_response
 
 
-@planets_bp.get("/<planet_id>")
-def get_one_planet(planet_id):
-    # handle wrong parameter in url. like a string and not a number that can be explicitly changed with int()
+def validate_planet(planet_id):
     try:
         planet_id = int(planet_id)
     except:
-        return {"message": f"invalid planet {planet_id} invalid"}, 400
-    planet_id = int(planet_id)
+        response = {{"message": f"invalid planet {planet_id} invalid"}}
+        abort(make_response(response, 400))
+
     for planet in planets:
         if planet.id == planet_id:
-            return {"id": planet.id,
-                    "name": planet.name,
-                    "description": planet.description,
-                    "number_of_moons": planet.number_of_moons}
-    return {"message": f"planet {planet_id} not found"}, 404
+            return planet
+    response = {"message": f"planet {planet_id} not found"}
+    abort(make_response(response, 404))
+
+
+@planets_bp.get("/<planet_id>")
+def get_one_planet(planet_id):
+    # handle wrong parameter in url. like a string and not a number that can be explicitly changed with int()
+    planet = validate_planet(planet_id)
+    return {"id": planet.id,
+            "name": planet.name,
+            "description": planet.description,
+            "number_of_moons": planet.number_of_moons}
+
 
 # Hey Tamika! Next steps i think its so make a helper function for the exception handeling helper to make code neater and make refractoring! If you read this comment let me know your thoughts or suggestions!
