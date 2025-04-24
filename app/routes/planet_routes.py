@@ -1,62 +1,50 @@
 from flask import Blueprint, abort, make_response, request
 from app.models.planets import Planet
-from ..db import  db
+from ..db import db
 # In Flask, url_prefix is an argument used when registering a blueprint. It adds a specified prefix to all routes defined within that blueprint.
 # neat!
 planets_bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
+
+
 @planets_bp.get("")
 def get_all_planets():
-  query=db.select(Planet).order_by(Planet.id)
-  planets=db.session.scalars(query)
+    query = db.select(Planet).order_by(Planet.id)
+    planets = db.session.scalars(query)
 
-  planets_response=[]
-  for planet in planets:
-    planets_response.append(
-      {
-        "id":planet.id,
-        "title":planet.title,
-        "description":planet.description
-      }
-    )
+    planets_response = []
+    for planet in planets:
+        planets_response.append(
+            {
+                "id": planet.id,
+                "name": planet.name,
+                "number_of_moons": planet.number_of_moons,
+                "description": planet.description
+            }
+        )
 
     return planets_response
 
+
 @planets_bp.post("")
 def create_planet():
-  request_body=request.get_json()
-  title=request_body["title"]
-  description=request_body["description"]
+    request_body = request.get_json()
+    name = request_body["name"]
+    number_of_moons = request_body["number_of_moons"]
+    description = request_body["description"]
 
-  new_planet=Planet(title=title,description=description)
-  db.session.add(new_planet)
-  db.session.commit()
+    new_planet = Planet(
+        name=name, number_of_moons=number_of_moons, description=description)
+    db.session.add(new_planet)
+    db.session.commit()
 
-  response={
-    "id":new_planet.id,
-    "title":new_planet.title,
-    "description":new_planet.description
-  }
+    response = {
+        "id": new_planet.id,
+        "name": new_planet.name,
+        "number_of_moons": new_planet.number_of_moons,
+        "description": new_planet.description
+    }
 
-  return response, 201
-
-
-
-
-#     planet_response = []
-#     for planet in planets:
-#         # curiously  json does not require key ordering, so things may be printed out of order
-#         # it remembers insertion order, but it is not true for all dictionaries. FLASK ALPHABat? I cant spell guys , help
-#         # remember dictionaries are out of order
-#         planet_response.append(
-#             {
-#                 "id": planet.id,
-#                 "name": planet.name,
-#                 "description": planet.description,
-#                 "number_of_moons": planet.number_of_moons
-#                 # dont put spaces in key names, json is  a weirdo, treat it like a valid vairable name.
-#             }
-#         )
-#     return planet_response
+    return response, 201
 
 
 # def validate_planet(planet_id):
@@ -84,6 +72,3 @@ def create_planet():
 
 
 # Hey Tamika! Next steps i think its so make a helper function for the exception handeling helper to make code neater and make refractoring! If you read this comment let me know your thoughts or suggestions!
-
-
-

@@ -18,5 +18,6 @@ from ..db import db
 class Planet(db.Model):
     # planet will have id attribute, maps to a DB column of type int. if no id given, auto increment a value?
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    title: Mapped[str]
+    name: Mapped[str]
     description: Mapped[str]
+    number_of_moons: Mapped[int]
