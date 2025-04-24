@@ -1,5 +1,5 @@
 from flask import Blueprint, abort, make_response
-from app.models.planets import planets
+from ..models import planets
 # In Flask, url_prefix is an argument used when registering a blueprint. It adds a specified prefix to all routes defined within that blueprint.
 # neat!
 planets_bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
