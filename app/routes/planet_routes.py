@@ -8,7 +8,22 @@ planets_bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
 
 @planets_bp.get("")
 def get_all_planets():
-    query = db.select(Planet).order_by(Planet.id)
+    query = db.select(Planet)
+
+    name_param = request.args.get("name")
+    if name_param:
+        query = query.where(Planet.name == name_param)
+
+    number_of_moon_param = request.args.get("number_of_moons")
+    if number_of_moon_param:
+        query = query.where(Planet.number_of_moons == number_of_moon_param)
+
+    disc_param = request.args.get("description")
+    if disc_param:
+        query = query.where(Planet.description.ilike(f"%{disc_param}%"))
+# desc is like descending order
+    query = query.order_by(Planet.name.asc())
+
     planets = db.session.scalars(query)
 
     planets_response = []
