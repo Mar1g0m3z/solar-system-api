@@ -1,4 +1,5 @@
 from flask import Blueprint, abort, make_response, request, Response
+from .routes_utilities import validate_model, create_model,  get_models_with_filters
 from app.models.planets import Planet
 from ..db import db
 # In Flask, url_prefix is an argument used when registering a blueprint. It adds a specified prefix to all routes defined within that blueprint.
@@ -8,74 +9,24 @@ planets_bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
 
 @planets_bp.get("")
 def get_all_planets():
-    query = db.select(Planet)
-
-    name_param = request.args.get("name")
-    if name_param:
-        query = query.where(Planet.name == name_param)
-
-    number_of_moon_param = request.args.get("number_of_moons")
-    if number_of_moon_param:
-        query = query.where(Planet.number_of_moons == number_of_moon_param)
-
-    disc_param = request.args.get("description")
-    if disc_param:
-        query = query.where(Planet.description.ilike(f"%{disc_param}%"))
-# desc is like descending order
-    query = query.order_by(Planet.name.asc())
-
-    planets = db.session.scalars(query)
-
-    planets_response = []
-    for planet in planets:
-        planets_response.append(
-            {
-                "id": planet.id,
-                "name": planet.name,
-                "number_of_moons": planet.number_of_moons,
-                "description": planet.description
-            }
-        )
-
-    return planets_response
+    return get_models_with_filters(Planet, request.args)
 
 
 @planets_bp.get("/<id>")
 def get_one_planet(id):
-    planet = validate_planet(id)
-    return {
-        "id": planet.id,
-        "name": planet.name,
-        "number_of_moons": planet.number_of_moons,
-        "description": planet.description
-    }
+    planet = validate_model(Planet, id)
+    return planet.to_dict()
 
 
 @planets_bp.post("")
 def create_planet():
     request_body = request.get_json()
-    name = request_body["name"]
-    number_of_moons = request_body["number_of_moons"]
-    description = request_body["description"]
-
-    new_planet = Planet(
-        name=name, number_of_moons=number_of_moons, description=description)
-    db.session.add(new_planet)
-    db.session.commit()
-
-    response = {
-        "id": new_planet.id,
-        "name": new_planet.name,
-        "number_of_moons": new_planet.number_of_moons,
-        "description": new_planet.description
-    }
-
-    return response, 201
+    return create_model(Planet, request_body)
 
 
 @planets_bp.put("/<id>")
 def update_planet(id):
-    planet = validate_planet(id)
+    planet = validate_model(id)
     request_body = request.get_json()
 
     planet.name = request_body["name"]
@@ -88,27 +39,27 @@ def update_planet(id):
 
 @planets_bp.delete("/<id>")
 def delete_planet(id):
-    planet = validate_planet(id)
+    planet = validate_model(Planet,id)
     db.session.delete(planet)
     db.session.commit()
     return Response(status=204, mimetype="application/json")
 
 
-def validate_planet(id):
-    try:
-        id = int(id)
-    except ValueError:
-        invalid_response = {"message": f"Planet id({id})is invalid."}
-        abort(make_response(invalid_response, 400))
+# def validate_planet(id):
+#     try:
+#         id = int(id)
+#     except ValueError:
+#         invalid_response = {"message": f"Planet id({id})is invalid."}
+#         abort(make_response(invalid_response, 400))
 
-    query = db.select(Planet).where(Planet.id == id)
-    planet = db.session.scalar(query)
+#     query = db.select(Planet).where(Planet.id == id)
+#     planet = db.session.scalar(query)
 
-    if not planet:
-        not_found = {"message": f"Planet with id({id}) not found."}
-        abort(make_response(not_found, 404))
+#     if not planet:
+#         not_found = {"message": f"Planet with id({id}) not found."}
+#         abort(make_response(not_found, 404))
 
-    return planet
+#     return planet
 # def validate_planet(planet_id):
 #     try:
 #         planet_id = int(planet_id)
