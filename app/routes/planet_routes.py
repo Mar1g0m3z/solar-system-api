@@ -15,6 +15,7 @@ def get_all_planets():
 @planets_bp.get("/<id>")
 def get_one_planet(id):
     planet = validate_model(Planet, id)
+    
     return planet.to_dict()
 
 

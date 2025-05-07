@@ -9,6 +9,7 @@ def validate_model(cls, model_id):
         invalid_response = {
             "message": f"{cls.__name__} id ({model_id}) is invalid."}
         abort(make_response(invalid_response, 400))
+
     query = db.select(cls).where(cls.id == model_id)
     model = db.session.scalar(query)
 
@@ -16,6 +17,7 @@ def validate_model(cls, model_id):
         not_found = {
             "message": f"{cls.__name__} with id ({model_id}) not found."}
         abort(make_response(not_found, 404))
+    return model
 
 
 def get_models_with_filters(cls, filters=None):
