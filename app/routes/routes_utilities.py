@@ -26,9 +26,11 @@ def get_models_with_filters(cls, filters=None):
     if filters:
         for attribute, value in filters.items():
             if hasattr(cls, attribute):
-                query = query.where(
-                    getattr(cls, attribute).ilike(f"%{value}%"))
-
+                attr = getattr(cls, attribute)
+            if isinstance(value, str) and str(attr.type) in ["VARCHAR", "TEXT", "String"]:
+                query = query.where(attr.ilike(f"%{value}%"))
+            else:
+                query = query.where(attr == value)
     models = db.session.scalars(query.order_by(cls.id))
     models_response = [model.to_dict() for model in models]
 

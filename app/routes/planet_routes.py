@@ -4,28 +4,28 @@ from app.models.planets import Planet
 from ..db import db
 # In Flask, url_prefix is an argument used when registering a blueprint. It adds a specified prefix to all routes defined within that blueprint.
 # neat!
-planets_bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
+bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
 
 
-@planets_bp.get("")
+@bp.get("")
 def get_all_planets():
     return get_models_with_filters(Planet, request.args)
 
 
-@planets_bp.get("/<id>")
+@bp.get("/<id>")
 def get_one_planet(id):
     planet = validate_model(Planet, id)
-    
+
     return planet.to_dict()
 
 
-@planets_bp.post("")
+@bp.post("")
 def create_planet():
     request_body = request.get_json()
     return create_model(Planet, request_body)
 
 
-@planets_bp.put("/<id>")
+@bp.put("/<id>")
 def update_planet(id):
     planet = validate_model(id)
     request_body = request.get_json()
@@ -38,9 +38,9 @@ def update_planet(id):
     return Response(status=204, mimetype="application/json")
 
 
-@planets_bp.delete("/<id>")
+@bp.delete("/<id>")
 def delete_planet(id):
-    planet = validate_model(Planet,id)
+    planet = validate_model(Planet, id)
     db.session.delete(planet)
     db.session.commit()
     return Response(status=204, mimetype="application/json")
